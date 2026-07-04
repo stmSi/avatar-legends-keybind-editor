@@ -2,6 +2,24 @@
 
 A small native Windows editor for `button_config.ini` from **Avatar Legends: The Fighting Game**.
 
+## Download for Windows
+
+### [Download Avatar Bind Studio.exe](https://github.com/stmSi/avatar-legends-keybind-editor/releases/latest/download/Avatar-Bind-Studio.exe)
+
+No Rust, programming tools, or installation is required. Download the `.exe`, close the game, and run it. The usual Steam playtest config is detected automatically; `Browse…` can select another `button_config.ini`.
+
+Windows may show an unknown-publisher warning because this community build is not code-signed. Choose **More info → Run anyway** if you trust this repository.
+
+## Screenshots
+
+### Configure both players
+
+![Configure Player 1 and Player 2 keybinds](docs/screenshots/configure.png)
+
+### Test keys and macros live
+
+![Controller-style live input tester](docs/screenshots/test-inputs.png)
+
 ## Features
 
 - Automatically finds the Steam playtest config on this PC.
@@ -18,6 +36,8 @@ A small native Windows editor for `button_config.ini` from **Avatar Legends: The
 Close the game before saving. The game writes its in-memory controls back to the config when it exits.
 
 ## Build
+
+Players do not need this section. It is only for contributors building from source.
 
 ```powershell
 cargo build --release
