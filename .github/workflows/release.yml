@@ -1,0 +1,65 @@
+name: Build Windows app and release
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Test and build Windows executable
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Select stable Rust
+        shell: pwsh
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup component add clippy
+
+      - name: Run tests
+        run: cargo test --locked
+
+      - name: Run Clippy
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      - name: Build release executable
+        run: cargo build --locked --release
+
+      - name: Stage downloadable files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+          Copy-Item target\release\avatar-bind-studio.exe dist\Avatar-Bind-Studio.exe
+          $hash = (Get-FileHash dist\Avatar-Bind-Studio.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  Avatar-Bind-Studio.exe" | Set-Content dist\SHA256SUMS.txt
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Avatar-Bind-Studio-Windows
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Publish tagged GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create $env:GITHUB_REF_NAME `
+            dist/Avatar-Bind-Studio.exe `
+            dist/SHA256SUMS.txt `
+            --repo $env:GITHUB_REPOSITORY `
+            --verify-tag `
+            --generate-notes `
+            --title "Avatar Bind Studio $env:GITHUB_REF_NAME"
